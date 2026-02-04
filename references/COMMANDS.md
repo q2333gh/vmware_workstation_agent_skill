@@ -1,0 +1,475 @@
+# VMware Workstation CLI - Complete Command Reference
+
+This document provides a comprehensive reference for all vmrun commands used with VMware Workstation.
+
+## Environment Setup
+
+### Default Paths
+- **vmrun.exe**: `C:\Apps\vmware\vmrun.exe` (adjust based on installation)
+- **VMX file example**: `X:\VMs\new_ubt2204\Ubuntu 64-bit.vmx`
+
+### PowerShell Execution
+Always use the `&` operator in PowerShell when executing vmrun:
+```powershell
+& "C:\Apps\vmware\vmrun.exe" -T ws <command> "<vmx_path>" [options]
+```
+
+## VM Lifecycle Commands
+
+### Default Behavior: Always Prefer Soft Operations
+
+**IMPORTANT**: For stop, suspend, and reset commands, **always default to `soft`** unless:
+- User explicitly requests `hard` operation
+- Guest VM is unresponsive and soft operation fails
+- User specifically mentions "force" or "hard" shutdown/restart
+
+Soft operations are safer, allow graceful shutdown/preparation, and prevent data loss.
+
+### Start VM
+Start a virtual machine. Use `nogui` for headless operation.
+
+```powershell
+# Start with GUI
+& "C:\Apps\vmware\vmrun.exe" -T ws start "<vmx_path>"
+
+# Start headless (no GUI)
+& "C:\Apps\vmware\vmrun.exe" -T ws start "<vmx_path>" nogui
+```
+
+### Stop VM
+Stop a running virtual machine.
+
+**Soft Stop:**
+- 优雅关闭：向客户机操作系统发送关机信号
+- 客户机可以执行正常的关机流程（保存数据、关闭服务等）
+- 类似在客户机中点击"关机"按钮
+
+**Hard Stop:**
+- 强制停止：立即终止虚拟机，不通知客户机操作系统
+- 类似直接拔掉电源线，可能导致数据丢失
+- 仅在客户机无响应时使用
+
+```powershell
+# DEFAULT: Always use soft unless user explicitly requests hard
+& "C:\Apps\vmware\vmrun.exe" -T ws stop "<vmx_path>" soft
+
+# Only use hard when:
+# - User explicitly requests hard operation
+# - Guest VM is unresponsive and soft operation fails
+& "C:\Apps\vmware\vmrun.exe" -T ws stop "<vmx_path>" hard
+```
+
+### Suspend VM
+Suspend a running virtual machine.
+
+**Soft Suspend (推荐):**
+- 优雅暂停：暂停前会运行客户机操作系统的系统脚本
+- Windows 客户机：脚本会释放 IP 地址
+- Linux 客户机：脚本会暂停网络连接
+- 客户机操作系统会被通知暂停操作，可以优雅地准备暂停
+- 恢复后会自动恢复网络连接（Windows 重新获取 IP，Linux 重启网络）
+
+**Hard Suspend:**
+- 强制暂停：不运行任何脚本，类似直接拔掉电源线
+- 客户机操作系统不会被通知暂停操作
+- 网络连接保持（在 GUI 中对应 "Suspend" 选项）
+- 恢复后需要手动恢复网络连接
+
+```powershell
+# DEFAULT: Always use soft unless user explicitly requests hard
+& "C:\Apps\vmware\vmrun.exe" -T ws suspend "<vmx_path>" soft
+
+# Only use hard when:
+# - User explicitly requests hard operation
+# - Guest VM is unresponsive and soft operation fails
+& "C:\Apps\vmware\vmrun.exe" -T ws suspend "<vmx_path>" hard
+```
+
+**Default Behavior:**
+- **Always default to `soft`**: More safe, allows guest OS to gracefully prepare for suspension
+- **Use `hard` only**: When user explicitly requests it or guest is unresponsive
+
+### Reset VM
+Reset (restart) a running virtual machine.
+
+**Soft Reset:**
+- 优雅重启：向客户机操作系统发送重启信号
+- 客户机可以执行正常的重启流程
+- 类似在客户机中点击"重启"按钮
+
+**Hard Reset:**
+- 强制重启：立即重启虚拟机，不通知客户机操作系统
+- 类似按物理机的重启按钮，可能导致数据丢失
+- 仅在客户机无响应时使用
+
+```powershell
+# DEFAULT: Always use soft unless user explicitly requests hard
+& "C:\Apps\vmware\vmrun.exe" -T ws reset "<vmx_path>" soft
+
+# Only use hard when:
+# - User explicitly requests hard operation
+# - Guest VM is unresponsive and soft operation fails
+& "C:\Apps\vmware\vmrun.exe" -T ws reset "<vmx_path>" hard
+```
+
+### List Running VMs
+List all currently running virtual machines.
+
+```powershell
+& "C:\Apps\vmware\vmrun.exe" -T ws list
+```
+
+**Example output:**
+```
+Total running VMs: 1
+X:\VMs\new_ubt2204\Ubuntu 64-bit.vmx (running)
+```
+
+## Snapshot Commands
+
+### Create Snapshot
+Create a snapshot of the current VM state.
+
+```powershell
+& "C:\Apps\vmware\vmrun.exe" -T ws snapshot "<vmx_path>" "<snapshot_name>"
+```
+
+**Example:**
+```powershell
+& "C:\Apps\vmware\vmrun.exe" -T ws snapshot "X:\VMs\new_ubt2204\Ubuntu 64-bit.vmx" "snap1"
+```
+
+### List Snapshots
+List all snapshots for a VM.
+
+```powershell
+& "C:\Apps\vmware\vmrun.exe" -T ws listSnapshots "<vmx_path>"
+```
+
+### Revert to Snapshot
+Revert the VM to a specific snapshot state.
+
+```powershell
+& "C:\Apps\vmware\vmrun.exe" -T ws revertToSnapshot "<vmx_path>" "<snapshot_name>"
+```
+
+**Example:**
+```powershell
+& "C:\Apps\vmware\vmrun.exe" -T ws revertToSnapshot "X:\VMs\new_ubt2204\Ubuntu 64-bit.vmx" "snap1"
+```
+
+### Delete Snapshot
+Delete a specific snapshot.
+
+```powershell
+& "C:\Apps\vmware\vmrun.exe" -T ws deleteSnapshot "<vmx_path>" "<snapshot_name>"
+```
+
+**Example:**
+```powershell
+& "C:\Apps\vmware\vmrun.exe" -T ws deleteSnapshot "X:\VMs\new_ubt2204\Ubuntu 64-bit.vmx" "snap1"
+```
+
+## Guest Operations
+
+All guest operations require guest credentials:
+- `-gu <username>`: Guest username
+- `-gp <password>`: Guest password
+
+**Note:** VMware Tools must be installed and running in the guest VM for these operations to work.
+
+### Run Program in Guest
+Execute a program inside the guest VM.
+
+```powershell
+& "C:\Apps\vmware\vmrun.exe" -T ws -gu <user> -gp <pass> runProgramInGuest "<vmx_path>" "<program_path>"
+```
+
+**Example (Windows guest):**
+```powershell
+& "C:\Apps\vmware\vmrun.exe" -T ws -gu user -gp pass runProgramInGuest "X:\VMs\new_ubt2204\Ubuntu 64-bit.vmx" "C:\Windows\System32\notepad.exe"
+```
+
+### Run Script in Guest
+Execute a script or command inside the guest VM.
+
+```powershell
+& "C:\Apps\vmware\vmrun.exe" -T ws -gu <user> -gp <pass> runScriptInGuest "<vmx_path>" "<interpreter>" "<script>"
+```
+
+**Example (Windows guest):**
+```powershell
+& "C:\Apps\vmware\vmrun.exe" -T ws -gu user -gp pass runScriptInGuest "X:\VMs\new_ubt2204\Ubuntu 64-bit.vmx" "C:\Windows\System32\cmd.exe" "dir C:\"
+```
+
+**Example (Linux guest):**
+```powershell
+& "C:\Apps\vmware\vmrun.exe" -T ws -gu user -gp pass runScriptInGuest "<vmx_path>" "/bin/bash" "ls -la /home"
+```
+
+### List Processes in Guest
+List all running processes in the guest VM.
+
+```powershell
+& "C:\Apps\vmware\vmrun.exe" -T ws -gu <user> -gp <pass> listProcessesInGuest "<vmx_path>"
+```
+
+### Kill Process in Guest
+Terminate a specific process in the guest VM.
+
+```powershell
+& "C:\Apps\vmware\vmrun.exe" -T ws -gu <user> -gp <pass> killProcessInGuest "<vmx_path>" <pid>
+```
+
+**Example:**
+```powershell
+& "C:\Apps\vmware\vmrun.exe" -T ws -gu user -gp pass killProcessInGuest "X:\VMs\new_ubt2204\Ubuntu 64-bit.vmx" 1234
+```
+
+## File Operations
+
+### Copy File from Host to Guest
+Copy a file from the host system to the guest VM.
+
+```powershell
+& "C:\Apps\vmware\vmrun.exe" -T ws -gu <user> -gp <pass> copyFileFromHostToGuest "<vmx_path>" "<host_path>" "<guest_path>"
+```
+
+**Example:**
+```powershell
+& "C:\Apps\vmware\vmrun.exe" -T ws -gu user -gp pass copyFileFromHostToGuest "X:\VMs\new_ubt2204\Ubuntu 64-bit.vmx" "C:\host\file.txt" "C:\guest\file.txt"
+```
+
+### Copy File from Guest to Host
+Copy a file from the guest VM to the host system.
+
+```powershell
+& "C:\Apps\vmware\vmrun.exe" -T ws -gu <user> -gp <pass> copyFileFromGuestToHost "<vmx_path>" "<guest_path>" "<host_path>"
+```
+
+**Example:**
+```powershell
+& "C:\Apps\vmware\vmrun.exe" -T ws -gu user -gp pass copyFileFromGuestToHost "X:\VMs\new_ubt2204\Ubuntu 64-bit.vmx" "C:\guest\file.txt" "C:\host\file.txt"
+```
+
+## VM Information Commands
+
+### Get Guest IP Address
+Retrieve the IP address of the guest VM.
+
+```powershell
+# Get IP immediately (may return empty if not available)
+& "C:\Apps\vmware\vmrun.exe" -T ws getGuestIPAddress "<vmx_path>"
+
+# Wait for IP address to become available
+& "C:\Apps\vmware\vmrun.exe" -T ws getGuestIPAddress "<vmx_path>" -wait
+```
+
+**Example:**
+```powershell
+& "C:\Apps\vmware\vmrun.exe" -T ws getGuestIPAddress "X:\VMs\new_ubt2204\Ubuntu 64-bit.vmx" -wait
+```
+
+### List Shared Folders
+**Note**: vmrun does not have a direct `listSharedFolders` command. However, you can query shared folders by reading the `.vmx` file.
+
+**Query shared folders from VMX file:**
+```powershell
+# Get all shared folder entries
+Get-Content "<vmx_path>" | Select-String -Pattern "^sharedFolder" | ForEach-Object { $_.Line }
+```
+
+**Formatted output (PowerShell script):**
+```powershell
+$vmxPath = "<vmx_path>"
+$sharedFolders = @{}
+$maxNum = 0
+
+# Read VMX file and parse shared folder entries
+Get-Content $vmxPath | ForEach-Object {
+    if ($_ -match "^sharedFolder\.maxNum\s*=\s*""(\d+)""") {
+        $maxNum = [int]$matches[1]
+    }
+    elseif ($_ -match "^sharedFolder(\d+)\.(\w+)\s*=\s*""([^""]+)""") {
+        $index = $matches[1]
+        $property = $matches[2]
+        $value = $matches[3]
+        
+        if (-not $sharedFolders[$index]) {
+            $sharedFolders[$index] = @{}
+        }
+        $sharedFolders[$index][$property] = $value
+    }
+}
+
+# Display formatted results
+Write-Host "Shared Folders (Total: $maxNum):" -ForegroundColor Cyan
+Write-Host ""
+for ($i = 0; $i -lt $maxNum; $i++) {
+    if ($sharedFolders[$i] -and $sharedFolders[$i]['present'] -eq 'TRUE') {
+        Write-Host "Folder $i:" -ForegroundColor Yellow
+        Write-Host "  Guest Name: $($sharedFolders[$i]['guestName'])"
+        Write-Host "  Host Path:   $($sharedFolders[$i]['hostPath'])"
+        Write-Host "  Enabled:     $($sharedFolders[$i]['enabled'])"
+        Write-Host "  Read Access: $($sharedFolders[$i]['readAccess'])"
+        Write-Host "  Write Access:$($sharedFolders[$i]['writeAccess'])"
+        Write-Host "  Expiration:  $($sharedFolders[$i]['expiration'])"
+        Write-Host ""
+    }
+}
+```
+
+**Example:**
+```powershell
+Get-Content "X:\VMs\new_ubt2204\Ubuntu 64-bit.vmx" | Select-String -Pattern "^sharedFolder" | ForEach-Object { $_.Line }
+```
+
+## Utility Commands
+
+### Find VMX Files
+Locate VMX files in a directory (PowerShell command):
+
+```powershell
+Get-ChildItem -LiteralPath "<vm_directory>" -Filter *.vmx | Select-Object -First 5 FullName
+```
+
+**Example:**
+```powershell
+Get-ChildItem -LiteralPath "X:\VMs\new_ubt2204" -Filter *.vmx | Select-Object -First 5 FullName
+```
+
+## Common Patterns
+
+### Complete Workflow Example
+
+```powershell
+# 1. Find VMX file
+$vmx = Get-ChildItem -LiteralPath "X:\VMs\new_ubt2204" -Filter *.vmx | Select-Object -First 1 -ExpandProperty FullName
+
+# 2. Start VM headless
+& "C:\Apps\vmware\vmrun.exe" -T ws start $vmx nogui
+
+# 3. Wait for VM to boot and get IP
+$ip = & "C:\Apps\vmware\vmrun.exe" -T ws getGuestIPAddress $vmx -wait
+
+# 4. Copy file to guest
+& "C:\Apps\vmware\vmrun.exe" -T ws -gu user -gp pass copyFileFromHostToGuest $vmx "C:\host\script.sh" "/home/user/script.sh"
+
+# 5. Run script in guest
+& "C:\Apps\vmware\vmrun.exe" -T ws -gu user -gp pass runScriptInGuest $vmx "/bin/bash" "/home/user/script.sh"
+
+# 6. Stop VM
+& "C:\Apps\vmware\vmrun.exe" -T ws stop $vmx soft
+```
+
+## Troubleshooting
+
+### vmrun.exe Not Found
+- Check VMware Workstation installation directory
+- Common locations:
+  - `C:\Program Files (x86)\VMware\VMware Workstation\vmrun.exe`
+  - `C:\Apps\vmware\vmrun.exe` (custom installation)
+
+### Guest Operations Fail
+- Verify VMware Tools is installed in the guest VM
+- Ensure VMware Tools service is running
+- Check guest credentials are correct
+- Confirm guest VM is powered on
+
+### VM Operations Fail
+- Verify VM is in the correct state (can't start an already running VM)
+- Check VMX file path is correct and accessible
+- Ensure no other process is using the VM
+
+## Shared Folders Auto-Mount Setup (Ubuntu)
+
+### Problem
+Modern Ubuntu versions use `open-vm-tools` instead of traditional VMware Tools, and shared folders are **not automatically mounted** by default. You need to manually configure auto-mounting.
+
+### Solution: Set up automatic mounting via /etc/fstab
+
+**Method 1: Using provided script (recommended)**
+
+1. Copy the setup script to the guest VM:
+```powershell
+& "C:\Apps\vmware\vmrun.exe" -T ws -gu <user> -gp <pass> copyFileFromHostToGuest "<vmx_path>" "C:\path\to\setup-shared-folders-auto-mount.sh" "/tmp/setup-shared-folders-auto-mount.sh"
+```
+
+2. Make script executable and run it:
+```powershell
+& "C:\Apps\vmware\vmrun.exe" -T ws -gu <user> -gp <pass> runScriptInGuest "<vmx_path>" "/bin/bash" "chmod +x /tmp/setup-shared-folders-auto-mount.sh && sudo /tmp/setup-shared-folders-auto-mount.sh"
+```
+
+**Method 2: Manual setup (Recommended approach - mount all shares)**
+
+For modern Ubuntu with `open-vm-tools` (Ubuntu 16.04+), use `fuse.vmhgfs-fuse`:
+
+1. Create mount point:
+```bash
+sudo mkdir -p /mnt/hgfs
+```
+
+2. Add to /etc/fstab (mounts ALL shared folders):
+```bash
+# allow_other: let normal users access /mnt/hgfs
+# nofail: prevent boot hang if shared folder is unavailable
+echo ".host:/ /mnt/hgfs fuse.vmhgfs-fuse uid=1000,gid=1000,allow_other,defaults,nofail 0 0" | sudo tee -a /etc/fstab
+```
+
+**Important**: The `nofail` option ensures that if the shared folder is unavailable (e.g., host folder deleted, VM not fully booted), the system will still boot successfully instead of hanging. The `allow_other` option, together with `user_allow_other` in `/etc/fuse.conf`, allows normal users (not just root) to read and write under `/mnt/hgfs`.
+
+3. Test mount:
+```bash
+sudo mount /mnt/hgfs
+```
+
+4. Verify:
+```bash
+ls -la /mnt/hgfs/
+```
+
+**Method 3: Manual setup (Mount specific share)**
+
+If you want to mount only a specific share:
+
+1. Create mount point:
+```bash
+sudo mkdir -p /mnt/hgfs/share_folder1
+```
+
+2. Add to /etc/fstab (for shares with spaces, use quotes):
+```bash
+# For share names without spaces:
+# allow_other: let normal users access /mnt/hgfs/share_folder1
+# nofail: prevent boot hang if shared folder is unavailable
+echo ".host:/share_folder1 /mnt/hgfs/share_folder1 fuse.vmhgfs-fuse allow_other,default_permissions,uid=1000,nofail 0 0" | sudo tee -a /etc/fstab
+
+# For share names with spaces:
+echo ".host:/\"Share Name\" /mnt/hgfs/\"Share Name\" fuse.vmhgfs-fuse allow_other,default_permissions,uid=1000,nofail 0 0" | sudo tee -a /etc/fstab
+```
+
+3. Test mount:
+```bash
+sudo mount /mnt/hgfs/share_folder1
+```
+
+**Important Notes:**
+- **Modern Ubuntu (16.04+)**: Use `fuse.vmhgfs-fuse` filesystem type (not `vmhgfs`)
+- **Older Ubuntu**: Use `vmhgfs` filesystem type
+- Replace `uid=1000,gid=1000` with your user's UID/GID (check with `id` command)
+- **Recommended**: Mount all shares (`.host:/`) rather than individual shares
+- **Safety**: Always include `nofail` option to prevent boot hang if shared folder is unavailable
+- VMware Tools (`open-vm-tools`) must be installed: `sudo apt-get install open-vm-tools`
+- After adding to /etc/fstab, the folder(s) will mount automatically on boot
+- You can list available shares with: `vmware-hgfsclient`
+
+**About `nofail` option:**
+- Prevents system boot hang if shared folder is unavailable (e.g., host folder deleted, VMware Tools not ready)
+- System will boot normally even if mount fails
+- Mount failure will be logged but won't stop boot process
+- **Highly recommended** for VMware shared folders to ensure system stability
+
+## Documentation References
+
+- Official vmrun documentation (PDF format, may require access)
+- Readable mirror: https://pdf4pro.com/view/using-vmrun-to-control-virtual-machines-vmware-71a573.html
