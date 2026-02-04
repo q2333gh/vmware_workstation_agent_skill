@@ -40,14 +40,14 @@ Start a virtual machine. Use `nogui` for headless operation.
 Stop a running virtual machine.
 
 **Soft Stop:**
-- 优雅关闭：向客户机操作系统发送关机信号
-- 客户机可以执行正常的关机流程（保存数据、关闭服务等）
-- 类似在客户机中点击"关机"按钮
+- Graceful shutdown: Sends shutdown signal to guest operating system
+- Guest OS can execute normal shutdown procedures (save data, close services, etc.)
+- Similar to clicking "Shutdown" button in the guest
 
 **Hard Stop:**
-- 强制停止：立即终止虚拟机，不通知客户机操作系统
-- 类似直接拔掉电源线，可能导致数据丢失
-- 仅在客户机无响应时使用
+- Force stop: Immediately terminates VM without notifying guest OS
+- Similar to pulling the power cord, may cause data loss
+- Use only when guest is unresponsive
 
 ```powershell
 # DEFAULT: Always use soft unless user explicitly requests hard
@@ -62,18 +62,18 @@ Stop a running virtual machine.
 ### Suspend VM
 Suspend a running virtual machine.
 
-**Soft Suspend (推荐):**
-- 优雅暂停：暂停前会运行客户机操作系统的系统脚本
-- Windows 客户机：脚本会释放 IP 地址
-- Linux 客户机：脚本会暂停网络连接
-- 客户机操作系统会被通知暂停操作，可以优雅地准备暂停
-- 恢复后会自动恢复网络连接（Windows 重新获取 IP，Linux 重启网络）
+**Soft Suspend (Recommended):**
+- Graceful suspend: Runs guest OS system scripts before suspending
+- Windows guests: Scripts release IP address
+- Linux guests: Scripts suspend networking
+- Guest OS is notified of suspend operation and can gracefully prepare
+- Network connectivity automatically restored on resume (Windows reacquires IP, Linux restarts networking)
 
 **Hard Suspend:**
-- 强制暂停：不运行任何脚本，类似直接拔掉电源线
-- 客户机操作系统不会被通知暂停操作
-- 网络连接保持（在 GUI 中对应 "Suspend" 选项）
-- 恢复后需要手动恢复网络连接
+- Force suspend: No scripts run, similar to pulling power cord
+- Guest OS is not notified of suspend operation
+- Network connection maintained (corresponds to "Suspend" option in GUI)
+- Network connection must be manually restored after resume
 
 ```powershell
 # DEFAULT: Always use soft unless user explicitly requests hard
@@ -93,14 +93,14 @@ Suspend a running virtual machine.
 Reset (restart) a running virtual machine.
 
 **Soft Reset:**
-- 优雅重启：向客户机操作系统发送重启信号
-- 客户机可以执行正常的重启流程
-- 类似在客户机中点击"重启"按钮
+- Graceful restart: Sends restart signal to guest operating system
+- Guest OS can execute normal restart procedures
+- Similar to clicking "Restart" button in the guest
 
 **Hard Reset:**
-- 强制重启：立即重启虚拟机，不通知客户机操作系统
-- 类似按物理机的重启按钮，可能导致数据丢失
-- 仅在客户机无响应时使用
+- Force restart: Immediately restarts VM without notifying guest OS
+- Similar to pressing physical reset button, may cause data loss
+- Use only when guest is unresponsive
 
 ```powershell
 # DEFAULT: Always use soft unless user explicitly requests hard
