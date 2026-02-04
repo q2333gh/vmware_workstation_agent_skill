@@ -24,7 +24,13 @@ Activate this skill when users need to:
 ## Prerequisites
 
 - VMware Workstation must be installed
-- `vmrun.exe` must be accessible (typically at `C:\Apps\vmware\vmrun.exe` or in VMware installation directory)
+- `vmrun.exe` must be accessible. Default installation locations:
+  - `C:\Program Files (x86)\VMware\VMware Workstation\vmrun.exe` (32-bit systems)
+  - `C:\Program Files\VMware\VMware Workstation\vmrun.exe` (64-bit systems)
+  - Custom installation paths (e.g., `C:\Apps\vmware\vmrun.exe`)
+- **Note**: `vmrun.exe` is **not automatically added to PATH** by default. You can either:
+  - Use the full path to `vmrun.exe` in commands (recommended for scripts)
+  - Add VMware Workstation directory to system PATH environment variable
 - VMX file path for the target virtual machine
 - For guest operations: guest credentials (username and password)
 
@@ -32,13 +38,27 @@ Activate this skill when users need to:
 
 All commands follow this pattern:
 ```powershell
-& "C:\Apps\vmware\vmrun.exe" -T ws <command> "<vmx_path>" [options]
+# Using full path (recommended)
+& "C:\Program Files\VMware\VMware Workstation\vmrun.exe" -T ws <command> "<vmx_path>" [options]
+
+# Or if vmrun.exe is in PATH:
+vmrun -T ws <command> "<vmx_path>" [options]
 ```
 
 Where:
 - `-T ws` specifies VMware Workstation type
 - `<vmx_path>` is the full path to the `.vmx` file
 - `<command>` is the operation to perform
+
+**Finding vmrun.exe location:**
+```powershell
+# Check common default locations
+Test-Path "C:\Program Files\VMware\VMware Workstation\vmrun.exe"
+Test-Path "C:\Program Files (x86)\VMware\VMware Workstation\vmrun.exe"
+
+# Or search for it
+Get-ChildItem -Path "C:\Program Files*" -Filter vmrun.exe -Recurse -ErrorAction SilentlyContinue | Select-Object FullName
+```
 
 ## Default Behavior Guidelines
 
@@ -190,7 +210,10 @@ Get-ChildItem -LiteralPath "<vm_directory>" -Filter *.vmx | Select-Object -First
 
 ## Important Notes
 
-1. **Full Path Required**: `vmrun.exe` is typically not in PATH. Always use the full path to `vmrun.exe`.
+1. **vmrun.exe Path**: `vmrun.exe` is **not automatically added to PATH** by default. Default installation locations:
+   - `C:\Program Files\VMware\VMware Workstation\vmrun.exe` (64-bit)
+   - `C:\Program Files (x86)\VMware\VMware Workstation\vmrun.exe` (32-bit)
+   - Use full path in commands, or add VMware Workstation directory to system PATH if you want to use `vmrun` directly
 
 2. **VMX Path**: Always use the full path to the `.vmx` file, enclosed in quotes if it contains spaces.
 

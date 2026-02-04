@@ -4,14 +4,34 @@ This document provides a comprehensive reference for all vmrun commands used wit
 
 ## Environment Setup
 
-### Default Paths
-- **vmrun.exe**: `C:\Apps\vmware\vmrun.exe` (adjust based on installation)
-- **VMX file example**: `X:\VMs\new_ubt2204\Ubuntu 64-bit.vmx`
+### Default Installation Paths
+VMware Workstation default installation locations:
+- **64-bit systems**: `C:\Program Files\VMware\VMware Workstation\vmrun.exe`
+- **32-bit systems**: `C:\Program Files (x86)\VMware\VMware Workstation\vmrun.exe`
+- **Custom installations**: May be installed in other locations (e.g., `C:\Apps\vmware\vmrun.exe`)
+
+**Note**: `vmrun.exe` is **not automatically added to PATH** by default. You must either:
+- Use the full path to `vmrun.exe` in commands (recommended)
+- Add VMware Workstation directory to system PATH environment variable
+
+### Finding vmrun.exe
+```powershell
+# Check common default locations
+Test-Path "C:\Program Files\VMware\VMware Workstation\vmrun.exe"
+Test-Path "C:\Program Files (x86)\VMware\VMware Workstation\vmrun.exe"
+
+# Search for vmrun.exe
+Get-ChildItem -Path "C:\Program Files*" -Filter vmrun.exe -Recurse -ErrorAction SilentlyContinue | Select-Object FullName
+```
 
 ### PowerShell Execution
-Always use the `&` operator in PowerShell when executing vmrun:
+Always use the `&` operator in PowerShell when executing vmrun with full path:
 ```powershell
-& "C:\Apps\vmware\vmrun.exe" -T ws <command> "<vmx_path>" [options]
+# Using full path (recommended)
+& "C:\Program Files\VMware\VMware Workstation\vmrun.exe" -T ws <command> "<vmx_path>" [options]
+
+# Or if vmrun.exe is in PATH:
+vmrun -T ws <command> "<vmx_path>" [options]
 ```
 
 ## VM Lifecycle Commands
