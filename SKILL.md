@@ -343,6 +343,7 @@ Further commands documented in [COMMANDS.md](references/COMMANDS.md):
 - **Guest run options:** runProgramInGuest / runScriptInGuest support `-noWait`, `-activeWindow`, `-interactive`
 - **Shared folders:** addSharedFolder, removeSharedFolder, enableSharedFolders, disableSharedFolders, setSharedFolderState
 - **Host network (Windows only):** listHostNetworks, listPortForwardings, setPortForwarding, deletePortForwarding
+- **Guest input:** typeKeystrokesInGuest (send keystrokes to guest; useful for GUI automation)
 - **Devices:** connectNamedDevice, disconnectNamedDevice (e.g. sound, Ethernet0, sata0:1)
 - **Variables:** writeVariable, readVariable (guestVar, runtimeConfig, guestEnv)
 - **General:** checkToolsState, upgradevm, installTools, deleteVM, clone (full/linked)

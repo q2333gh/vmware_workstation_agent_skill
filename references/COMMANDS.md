@@ -14,6 +14,11 @@ VMware Workstation default installation locations:
 - Use the full path to `vmrun.exe` in commands (recommended)
 - Add VMware Workstation directory to system PATH environment variable
 
+**Authentication flags** (must appear before the command):
+- `-T ws` — host type: Workstation (use `fusion` or `player` for other products)
+- `-gu <user>` / `-gp <pass>` — guest OS login (required for guest operations)
+- `-vp <password>` — password for encrypted virtual machine (if the VM is encrypted)
+
 ### Finding vmrun.exe
 ```powershell
 # Check common default locations
@@ -346,6 +351,22 @@ Capture the guest screen to a PNG file on the host. Requires `-gu` and `-gp`.
 ```powershell
 & "<path_to_vmrun.exe>" -T ws -gu <user> -gp <pass> captureScreen "<vmx_path>" "<host_output.png>"
 ```
+
+### Type Keystrokes in Guest
+Send keystrokes to the guest OS (e.g. for automation). Requires `-gu` and `-gp`.
+
+```powershell
+& "<path_to_vmrun.exe>" -T ws -gu <user> -gp <pass> typeKeystrokesInGuest "<vmx_path>" "<keystroke_string>"
+```
+
+Use standard key names (e.g. `ctrl+tab`, `ctrl+c`; modifier+key). Useful for GUI automation when combined with runProgramInGuest.
+
+**Troubleshooting — "Insufficient permissions in the host operating system":**  
+This error is common with `typeKeystrokesInGuest` on Windows. Try:
+
+1. **Run the host as Administrator** — Start PowerShell or CMD **as Administrator**, then run the vmrun command again. On some systems this still does **not** resolve the error (VIX/Workstation limitation).
+2. **Guest credentials** — Ensure `-gu` and `-gp` are correct and the guest has VMware Tools running (e.g. `checkToolsState` returns `running`). Using root in the guest does not fix a host-side permission error.
+3. **Known limitation** — Even with host Administrator and valid guest login, `typeKeystrokesInGuest` can fail with this error. vmrun uses the deprecated VIX API; keystroke injection is not reliably supported on all Workstation/Windows setups. **Recommendation:** Prefer **runScriptInGuest** / **runProgramInGuest** for automation where possible; reserve typeKeystrokesInGuest for environments where it is known to work.
 
 ## File Operations
 

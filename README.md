@@ -27,6 +27,16 @@ cp -r vmware_workstation_agent_skill ~/.cursor/skills/vmware-workstation-cli
 - Windows PowerShell environment
 - VMware Tools in guest VMs (for guest operations)
 
+## Official vmrun help
+
+To see the built-in help from your installed vmrun, run:
+
+```powershell
+& "C:\path\to\vmrun.exe"
+```
+
+(No `-help` flag; invalid arguments print version and usage.) The project may also include a saved copy as `vmrun_help.md` in the parent repo for reference (vmrun version 1.17.0 format).
+
 ## License
 
 See LICENSE file for details.
