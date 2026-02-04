@@ -327,6 +327,13 @@ Get-ChildItem -LiteralPath "<vm_directory>" -Filter *.vmx | Select-Object -First
 
 5. **Default to Soft Operations**: **ALWAYS prefer `soft` operations by default** for stop, suspend, and reset commands. Use `hard` only when explicitly requested by the user or when the guest is unresponsive. Soft operations are safer, allow graceful shutdown/preparation, and prevent data loss.
 
+## Limitations (vmrun cannot)
+
+- **Create new VM** — no create-VM command; use GUI, vmcli (Workstation 17+), or manual .vmx.
+- **List shared folders** — no listSharedFolders; query VMX for `sharedFolder*` (see COMMANDS.md).
+- **runScriptInGuest stdout** — guest stdout is not returned; redirect to file in guest, then copyFileFromGuestToHost.
+- **typeKeystrokesInGuest** — often fails with "Insufficient permissions" on Windows host; prefer runScriptInGuest/runProgramInGuest.
+
 ## Error Handling
 
 - **If `vmrun.exe` is not found at default paths**: STOP execution immediately and ask the user to provide the full path to vmrun.exe. Do NOT attempt automatic search.
