@@ -14,16 +14,6 @@ Install this Agent Skill from GitHub: https://github.com/q2333gh/vmware_workstat
 
 The agent will clone the repository and install the complete skill with all files (SKILL.md, references/COMMANDS.md, scripts/).
 
-**Option 2: Install from raw URL (SKILL.md only)**
-
-If you only need the main skill file:
-
-```
-https://raw.githubusercontent.com/q2333gh/vmware_workstation_agent_skill/master/SKILL.md
-```
-
-Note: This installs only SKILL.md. For full functionality including command references, use Option 1.
-
 ## Manual Installation
 
 ```bash
