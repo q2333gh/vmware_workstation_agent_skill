@@ -4,13 +4,25 @@ Control VMware Workstation VMs via `vmrun` CLI. Manage VM lifecycle, snapshots, 
 
 ## Install for LLM Agent
 
+**Option 1: Install entire skill directory (recommended)**
+
 Copy and paste this to your LLM agent:
 
 ```
-install this skill: https://raw.githubusercontent.com/q2333gh/vmware_workstation_agent_skill/master/SKILL.md
+Install this Agent Skill from GitHub: https://github.com/q2333gh/vmware_workstation_agent_skill
 ```
 
-The agent will automatically download and install this skill.
+The agent will clone the repository and install the complete skill with all files (SKILL.md, references/COMMANDS.md, scripts/).
+
+**Option 2: Install from raw URL (SKILL.md only)**
+
+If you only need the main skill file:
+
+```
+https://raw.githubusercontent.com/q2333gh/vmware_workstation_agent_skill/master/SKILL.md
+```
+
+Note: This installs only SKILL.md. For full functionality including command references, use Option 1.
 
 ## Manual Installation
 
