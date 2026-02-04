@@ -14,12 +14,13 @@ This skill enables agents to control VMware Workstation virtual machines using t
 ## When to Use
 
 Activate this skill when users need to:
-- Start, stop, suspend, or reset virtual machines
+- Start, stop, suspend, pause, or reset virtual machines
 - Manage VM snapshots (create, list, revert, delete)
 - Run programs or scripts inside guest VMs
 - Copy files between host and guest
 - Query VM status (running VMs, guest IP addresses)
-- Perform guest operations (list processes, kill processes)
+- Perform guest operations (list processes, kill processes; list/check/create/delete files or directories in guest)
+- Capture guest screen, manage shared folders, or configure host port forwarding (Windows)
 
 ## Prerequisites
 
@@ -155,6 +156,16 @@ Where:
 & "<path_to_vmrun.exe>" -T ws reset "<vmx_path>" soft
 ```
 
+**Pause VM (no soft/hard):**
+```powershell
+& "<path_to_vmrun.exe>" -T ws pause "<vmx_path>"
+```
+
+**Unpause VM:**
+```powershell
+& "<path_to_vmrun.exe>" -T ws unpause "<vmx_path>"
+```
+
 ### Snapshots
 
 **Create snapshot:**
@@ -191,6 +202,28 @@ Guest operations require credentials (`-gu` for username, `-gp` for password):
 & "<path_to_vmrun.exe>" -T ws -gu <user> -gp <pass> runScriptInGuest "<vmx_path>" "<interpreter>" "<script>"
 ```
 
+**Getting script output from guest (workaround):**
+
+`runScriptInGuest` does **not** return guest stdout to the host; output will not appear in PowerShell. To get command/script output:
+
+1. Run the script in the guest with output redirected to a file (e.g. `/tmp/out.txt` on Linux).
+2. Copy that file from guest to host with `copyFileFromGuestToHost`.
+3. Read the host file to get the output. Optionally delete the guest temp file afterward.
+
+Example (Linux guest — run command and retrieve output):
+```powershell
+# 1. Run command in guest, redirect output to file
+& "<path_to_vmrun.exe>" -T ws -gu <user> -gp <pass> runScriptInGuest "<vmx_path>" "/bin/bash" "<command> > /tmp/guest_out.txt 2>&1"
+
+# 2. Copy file from guest to host
+& "<path_to_vmrun.exe>" -T ws -gu <user> -gp <pass> copyFileFromGuestToHost "<vmx_path>" "/tmp/guest_out.txt" "<host_path>"
+
+# 3. Read output on host
+Get-Content "<host_path>"
+```
+
+Replace `<command>` with the actual command (e.g. `ls ~`, `whoami`). Use a unique temp path if running multiple commands.
+
 **List processes in guest:**
 ```powershell
 & "<path_to_vmrun.exe>" -T ws -gu <user> -gp <pass> listProcessesInGuest "<vmx_path>"
@@ -213,6 +246,21 @@ Guest operations require credentials (`-gu` for username, `-gp` for password):
 & "<path_to_vmrun.exe>" -T ws -gu <user> -gp <pass> copyFileFromGuestToHost "<vmx_path>" "<guest_path>" "<host_path>"
 ```
 
+**Guest file/directory operations (require -gu -gp):**
+- **fileExistsInGuest** — check if file exists in guest: `… fileExistsInGuest "<vmx_path>" "<guest_file_path>"`
+- **directoryExistsInGuest** — check if directory exists: `… directoryExistsInGuest "<vmx_path>" "<guest_dir_path>"`
+- **listDirectoryInGuest** — list contents of a directory: `… listDirectoryInGuest "<vmx_path>" "<guest_dir_path>"`
+- **createTempfileInGuest** — create temp file in guest, returns path: `… createTempfileInGuest "<vmx_path>"`
+- **deleteFileInGuest** — delete file in guest: `… deleteFileInGuest "<vmx_path>" "<guest_file_path>"`
+- **createDirectoryInGuest** — create directory: `… createDirectoryInGuest "<vmx_path>" "<guest_dir_path>"`
+- **deleteDirectoryInGuest** — delete directory: `… deleteDirectoryInGuest "<vmx_path>" "<guest_dir_path>"`
+- **renameFileInGuest** — rename/move file: `… renameFileInGuest "<vmx_path>" "<original>" "<new>"`
+
+**Capture guest screen (PNG to host):**
+```powershell
+& "<path_to_vmrun.exe>" -T ws -gu <user> -gp <pass> captureScreen "<vmx_path>" "<host_output.png>"
+```
+
 ### VM Information
 
 **Get guest IP address:**
@@ -228,7 +276,7 @@ The `-wait` flag waits for the guest to obtain an IP address if it's not yet ava
 Get-Content "<vmx_path>" | Select-String -Pattern "^sharedFolder" | ForEach-Object { $_.Line }
 ```
 
-**Note**: vmrun does not provide a `listSharedFolders` command. Shared folder information is stored in the `.vmx` file and can be queried by reading the file.
+**Note**: vmrun does not provide a `listSharedFolders` command. Shared folder information is stored in the `.vmx` file and can be queried by reading the file. To add/remove shared folders at runtime use **addSharedFolder**, **removeSharedFolder**, **enableSharedFolders**, **disableSharedFolders**, **setSharedFolderState** (see COMMANDS.md).
 
 ### Linux shared folder permissions (non-root access)
 
@@ -285,6 +333,19 @@ Get-ChildItem -LiteralPath "<vm_directory>" -Filter *.vmx | Select-Object -First
 - **If user-provided path doesn't exist**: Verify the path and ask the user to provide the correct path again.
 - **If guest operations fail**: Verify VMware Tools is installed and running in the guest
 - **If VM operations fail**: Ensure the VM is in the correct state (e.g., can't start an already running VM)
+
+## Additional vmrun features (reference)
+
+Further commands documented in [COMMANDS.md](references/COMMANDS.md):
+
+- **Power:** pause, unpause
+- **Snapshot:** listSnapshots `showtree`, deleteSnapshot `andDeleteChildren`
+- **Guest run options:** runProgramInGuest / runScriptInGuest support `-noWait`, `-activeWindow`, `-interactive`
+- **Shared folders:** addSharedFolder, removeSharedFolder, enableSharedFolders, disableSharedFolders, setSharedFolderState
+- **Host network (Windows only):** listHostNetworks, listPortForwardings, setPortForwarding, deletePortForwarding
+- **Devices:** connectNamedDevice, disconnectNamedDevice (e.g. sound, Ethernet0, sata0:1)
+- **Variables:** writeVariable, readVariable (guestVar, runtimeConfig, guestEnv)
+- **General:** checkToolsState, upgradevm, installTools, deleteVM, clone (full/linked)
 
 ## Reference
 

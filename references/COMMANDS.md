@@ -146,6 +146,20 @@ Total running VMs: 1
 <vmx_path> (running)
 ```
 
+### Pause VM
+Pauses a virtual machine (no soft/hard). Use **unpause** to resume.
+
+```powershell
+& "<path_to_vmrun.exe>" -T ws pause "<vmx_path>"
+```
+
+### Unpause VM
+Resumes a paused virtual machine.
+
+```powershell
+& "<path_to_vmrun.exe>" -T ws unpause "<vmx_path>"
+```
+
 ## Snapshot Commands
 
 ### Create Snapshot
@@ -161,10 +175,11 @@ Create a snapshot of the current VM state.
 ```
 
 ### List Snapshots
-List all snapshots for a VM.
+List all snapshots for a VM. Use **showtree** to display in tree format (children indented).
 
 ```powershell
 & "<path_to_vmrun.exe>" -T ws listSnapshots "<vmx_path>"
+& "<path_to_vmrun.exe>" -T ws listSnapshots "<vmx_path>" showtree
 ```
 
 ### Revert to Snapshot
@@ -180,10 +195,11 @@ Revert the VM to a specific snapshot state.
 ```
 
 ### Delete Snapshot
-Delete a specific snapshot.
+Delete a specific snapshot. VM must be powered off or suspended. Use **andDeleteChildren** to delete the snapshot and its children recursively.
 
 ```powershell
 & "<path_to_vmrun.exe>" -T ws deleteSnapshot "<vmx_path>" "<snapshot_name>"
+& "<path_to_vmrun.exe>" -T ws deleteSnapshot "<vmx_path>" "<snapshot_name>" andDeleteChildren
 ```
 
 **Example:**
@@ -200,10 +216,11 @@ All guest operations require guest credentials:
 **Note:** VMware Tools must be installed and running in the guest VM for these operations to work.
 
 ### Run Program in Guest
-Execute a program inside the guest VM.
+Execute a program inside the guest VM. Optional flags (before program path): **-noWait** (return immediately, don't wait for program to finish; useful for interactive apps), **-activeWindow** (ensure Windows GUI is visible; no effect on Linux), **-interactive** (force interactive guest login; useful for Windows Vista/7+ to show program in console).
 
 ```powershell
 & "<path_to_vmrun.exe>" -T ws -gu <user> -gp <pass> runProgramInGuest "<vmx_path>" "<program_path>"
+& "<path_to_vmrun.exe>" -T ws -gu <user> -gp <pass> runProgramInGuest "<vmx_path>" -noWait "<program_path>"
 ```
 
 **Example (Windows guest):**
@@ -212,7 +229,7 @@ Execute a program inside the guest VM.
 ```
 
 ### Run Script in Guest
-Execute a script or command inside the guest VM.
+Execute a script or command inside the guest VM. Same optional flags as runProgramInGuest: **-noWait**, **-activeWindow**, **-interactive** (before interpreter path).
 
 ```powershell
 & "<path_to_vmrun.exe>" -T ws -gu <user> -gp <pass> runScriptInGuest "<vmx_path>" "<interpreter>" "<script>"
@@ -227,6 +244,39 @@ Execute a script or command inside the guest VM.
 ```powershell
 & "<path_to_vmrun.exe>" -T ws -gu user -gp pass runScriptInGuest "<vmx_path>" "/bin/bash" "ls -la /home"
 ```
+
+**Important:** `runScriptInGuest` does **not** return guest stdout to the host. Output will not appear in the terminal. Use the workaround below to get script/command output.
+
+### Getting Script Output from Guest (Workaround)
+
+Because `runScriptInGuest` does not return stdout to the host, capture output by redirecting to a file in the guest, then copying that file to the host.
+
+**Steps:**
+
+1. Run the script/command in the guest with output redirected to a temp file (e.g. `/tmp/guest_out.txt` on Linux).
+2. Copy the file from guest to host with `copyFileFromGuestToHost`.
+3. Read the file on the host to get the output.
+
+**Example (Linux guest — run `ls ~` and get output):**
+```powershell
+$vmrun = "<path_to_vmrun.exe>"
+$vmx = "<vmx_path>"
+$gu = "<guest_user>"
+$gp = "<guest_password>"
+$guestTmp = "/tmp/guest_out.txt"
+$hostOut = "C:\path\to\output.txt"
+
+# 1. Run command in guest, redirect to file
+& $vmrun -T ws -gu $gu -gp $gp runScriptInGuest $vmx "/bin/bash" "ls -la ~ > $guestTmp 2>&1"
+
+# 2. Copy file from guest to host
+& $vmrun -T ws -gu $gu -gp $gp copyFileFromGuestToHost $vmx $guestTmp $hostOut
+
+# 3. Read output on host
+Get-Content $hostOut
+```
+
+Use a unique temp path per run if you run multiple commands. Optionally delete the guest temp file with a follow-up `runScriptInGuest` (e.g. `rm /tmp/guest_out.txt`) or leave it for next run.
 
 ### List Processes in Guest
 List all running processes in the guest VM.
@@ -245,6 +295,56 @@ Terminate a specific process in the guest VM.
 **Example:**
 ```powershell
 & "<path_to_vmrun.exe>" -T ws -gu user -gp pass killProcessInGuest "<vmx_path>" 1234
+```
+
+### Guest File and Directory Operations
+All require `-gu` and `-gp`. VMware Tools and valid guest login required.
+
+**fileExistsInGuest** — Check if a file exists in the guest:
+```powershell
+& "<path_to_vmrun.exe>" -T ws -gu <user> -gp <pass> fileExistsInGuest "<vmx_path>" "<guest_file_path>"
+```
+
+**directoryExistsInGuest** — Check if a directory exists in the guest:
+```powershell
+& "<path_to_vmrun.exe>" -T ws -gu <user> -gp <pass> directoryExistsInGuest "<vmx_path>" "<guest_dir_path>"
+```
+
+**listDirectoryInGuest** — List contents of a directory in the guest:
+```powershell
+& "<path_to_vmrun.exe>" -T ws -gu <user> -gp <pass> listDirectoryInGuest "<vmx_path>" "<guest_dir_path>"
+```
+
+**createTempfileInGuest** — Create a temporary file in the guest; returns the path:
+```powershell
+& "<path_to_vmrun.exe>" -T ws -gu <user> -gp <pass> createTempfileInGuest "<vmx_path>"
+```
+
+**deleteFileInGuest** — Delete a file in the guest:
+```powershell
+& "<path_to_vmrun.exe>" -T ws -gu <user> -gp <pass> deleteFileInGuest "<vmx_path>" "<guest_file_path>"
+```
+
+**createDirectoryInGuest** — Create a directory in the guest:
+```powershell
+& "<path_to_vmrun.exe>" -T ws -gu <user> -gp <pass> createDirectoryInGuest "<vmx_path>" "<guest_dir_path>"
+```
+
+**deleteDirectoryInGuest** — Delete a directory in the guest:
+```powershell
+& "<path_to_vmrun.exe>" -T ws -gu <user> -gp <pass> deleteDirectoryInGuest "<vmx_path>" "<guest_dir_path>"
+```
+
+**renameFileInGuest** — Rename or move a file in the guest:
+```powershell
+& "<path_to_vmrun.exe>" -T ws -gu <user> -gp <pass> renameFileInGuest "<vmx_path>" "<original_path>" "<new_path>"
+```
+
+### Capture Screen
+Capture the guest screen to a PNG file on the host. Requires `-gu` and `-gp`.
+
+```powershell
+& "<path_to_vmrun.exe>" -T ws -gu <user> -gp <pass> captureScreen "<vmx_path>" "<host_output.png>"
 ```
 
 ## File Operations
@@ -271,6 +371,108 @@ Copy a file from the guest VM to the host system.
 **Example:**
 ```powershell
 & "<path_to_vmrun.exe>" -T ws -gu user -gp pass copyFileFromGuestToHost "<vmx_path>" "<guest_path>" "<host_path>"
+```
+
+## Shared Folder Commands (Runtime)
+VM must be running for add/remove to take effect. Changes may require VM restart to apply.
+
+**addSharedFolder** — Add a shared folder (share name = mount point in guest; path = host directory):
+```powershell
+& "<path_to_vmrun.exe>" -T ws addSharedFolder "<vmx_path>" "<share_name>" "<host_path>"
+```
+
+**removeSharedFolder** — Remove guest access to a shared folder:
+```powershell
+& "<path_to_vmrun.exe>" -T ws removeSharedFolder "<vmx_path>" "<share_name>"
+```
+
+**enableSharedFolders** — Enable shared folders for the VM. Optional **runtime** limits to current run:
+```powershell
+& "<path_to_vmrun.exe>" -T ws enableSharedFolders "<vmx_path>" [runtime]
+```
+
+**disableSharedFolders** — Disable shared folders. Optional **runtime** limits to current run:
+```powershell
+& "<path_to_vmrun.exe>" -T ws disableSharedFolders "<vmx_path>" [runtime]
+```
+
+**setSharedFolderState** — Set writability: **writable** or **readonly**:
+```powershell
+& "<path_to_vmrun.exe>" -T ws setSharedFolderState "<vmx_path>" "<share_name>" "<host_path>" writable
+& "<path_to_vmrun.exe>" -T ws setSharedFolderState "<vmx_path>" "<share_name>" "<host_path>" readonly
+```
+
+## Host Network Commands (Windows Only)
+Workstation Pro on Windows only. Linux host does not support these.
+
+**listHostNetworks** — List all host networks:
+```powershell
+& "<path_to_vmrun.exe>" -T ws listHostNetworks
+```
+
+**listPortForwardings** — List port forwardings for a host network:
+```powershell
+& "<path_to_vmrun.exe>" -T ws listPortForwardings "<host_network_name>"
+```
+
+**setPortForwarding** — Set port forwarding (protocol, host port, guest IP, guest port; optional description). May require **sudo**:
+```powershell
+& "<path_to_vmrun.exe>" -T ws setPortForwarding "<host_network_name>" <protocol> <host_port> <guest_ip> <guest_port> [description]
+```
+
+**deletePortForwarding** — Delete port forwarding. May require **sudo**:
+```powershell
+& "<path_to_vmrun.exe>" -T ws deletePortForwarding "<host_network_name>" <protocol> <host_port>
+```
+
+## Device Commands
+Connect or disconnect devices (e.g. sound, serial0, Ethernet0, sata0:1). VM must be powered on.
+
+**connectNamedDevice** — Connect a device to the guest:
+```powershell
+& "<path_to_vmrun.exe>" -T ws connectNamedDevice "<vmx_path>" "<device_name>"
+```
+
+**disconnectNamedDevice** — Disconnect a device from the guest:
+```powershell
+& "<path_to_vmrun.exe>" -T ws disconnectNamedDevice "<vmx_path>" "<device_name>"
+```
+
+## Variable Commands
+**writeVariable** — Write guestVar (runtime-only), runtimeConfig (.vmx), or guestEnv (guest environment). guestEnv requires -gu -gp; Linux guestEnv may require root:
+```powershell
+& "<path_to_vmrun.exe>" -T ws [-gu <user> -gp <pass>] writeVariable "<vmx_path>" guestVar|runtimeConfig|guestEnv "<name>" "<value>"
+```
+
+**readVariable** — Read guestVar, runtimeConfig, or guestEnv. guestEnv requires -gu -gp:
+```powershell
+& "<path_to_vmrun.exe>" -T ws [-gu <user> -gp <pass>] readVariable "<vmx_path>" guestVar|runtimeConfig|guestEnv "<name>"
+```
+
+## General Commands
+**checkToolsState** — Check VMware Tools status (unknown, installed, running):
+```powershell
+& "<path_to_vmrun.exe>" -T ws checkToolsState "<vmx_path>"
+```
+
+**upgradevm** — Upgrade VM to current virtual hardware version. Power off VM first. No effect if already latest:
+```powershell
+& "<path_to_vmrun.exe>" -T ws upgradevm "<vmx_path>"
+```
+
+**installTools** — Prepare to install VMware Tools (mounts Tools ISO; Windows may auto-start installer; Linux requires manual steps):
+```powershell
+& "<path_to_vmrun.exe>" -T ws installTools "<vmx_path>"
+```
+
+**deleteVM** — Delete the virtual machine:
+```powershell
+& "<path_to_vmrun.exe>" -T ws deleteVM "<vmx_path>"
+```
+
+**clone** — Clone VM (Workstation Pro only). **full** or **linked**; optional **-snapshot=Snapshot Name**, **-cloneName=Name**:
+```powershell
+& "<path_to_vmrun.exe>" -T ws clone "<vmx_path>" "<destination_vmx_path>" full|linked [-snapshot=Snapshot Name] [-cloneName=Name]
 ```
 
 ## VM Information Commands
