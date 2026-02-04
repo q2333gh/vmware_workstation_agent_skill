@@ -8,7 +8,7 @@ This document provides a comprehensive reference for all vmrun commands used wit
 VMware Workstation default installation locations:
 - **64-bit systems**: `C:\Program Files\VMware\VMware Workstation\vmrun.exe`
 - **32-bit systems**: `C:\Program Files (x86)\VMware\VMware Workstation\vmrun.exe`
-- **Custom installations**: May be installed in other locations (e.g., `C:\Apps\vmware\vmrun.exe`)
+- **Custom installations**: May be installed in other locations (use search commands to find)
 
 **Note**: `vmrun.exe` is **not automatically added to PATH** by default. You must either:
 - Use the full path to `vmrun.exe` in commands (recommended)
@@ -28,7 +28,8 @@ Get-ChildItem -Path "C:\Program Files*" -Filter vmrun.exe -Recurse -ErrorAction 
 Always use the `&` operator in PowerShell when executing vmrun with full path:
 ```powershell
 # Using full path (recommended)
-& "C:\Program Files\VMware\VMware Workstation\vmrun.exe" -T ws <command> "<vmx_path>" [options]
+# Replace <path_to_vmrun.exe> with actual path (e.g., "C:\Program Files\VMware\VMware Workstation\vmrun.exe")
+& "<path_to_vmrun.exe>" -T ws <command> "<vmx_path>" [options]
 
 # Or if vmrun.exe is in PATH:
 vmrun -T ws <command> "<vmx_path>" [options]
@@ -50,10 +51,10 @@ Start a virtual machine. Use `nogui` for headless operation.
 
 ```powershell
 # Start with GUI
-& "C:\Apps\vmware\vmrun.exe" -T ws start "<vmx_path>"
+& "<path_to_vmrun.exe>" -T ws start "<vmx_path>"
 
 # Start headless (no GUI)
-& "C:\Apps\vmware\vmrun.exe" -T ws start "<vmx_path>" nogui
+& "<path_to_vmrun.exe>" -T ws start "<vmx_path>" nogui
 ```
 
 ### Stop VM
@@ -71,12 +72,12 @@ Stop a running virtual machine.
 
 ```powershell
 # DEFAULT: Always use soft unless user explicitly requests hard
-& "C:\Apps\vmware\vmrun.exe" -T ws stop "<vmx_path>" soft
+& "<path_to_vmrun.exe>" -T ws stop "<vmx_path>" soft
 
 # Only use hard when:
 # - User explicitly requests hard operation
 # - Guest VM is unresponsive and soft operation fails
-& "C:\Apps\vmware\vmrun.exe" -T ws stop "<vmx_path>" hard
+& "<path_to_vmrun.exe>" -T ws stop "<vmx_path>" hard
 ```
 
 ### Suspend VM
@@ -97,12 +98,12 @@ Suspend a running virtual machine.
 
 ```powershell
 # DEFAULT: Always use soft unless user explicitly requests hard
-& "C:\Apps\vmware\vmrun.exe" -T ws suspend "<vmx_path>" soft
+& "<path_to_vmrun.exe>" -T ws suspend "<vmx_path>" soft
 
 # Only use hard when:
 # - User explicitly requests hard operation
 # - Guest VM is unresponsive and soft operation fails
-& "C:\Apps\vmware\vmrun.exe" -T ws suspend "<vmx_path>" hard
+& "<path_to_vmrun.exe>" -T ws suspend "<vmx_path>" hard
 ```
 
 **Default Behavior:**
@@ -124,25 +125,25 @@ Reset (restart) a running virtual machine.
 
 ```powershell
 # DEFAULT: Always use soft unless user explicitly requests hard
-& "C:\Apps\vmware\vmrun.exe" -T ws reset "<vmx_path>" soft
+& "<path_to_vmrun.exe>" -T ws reset "<vmx_path>" soft
 
 # Only use hard when:
 # - User explicitly requests hard operation
 # - Guest VM is unresponsive and soft operation fails
-& "C:\Apps\vmware\vmrun.exe" -T ws reset "<vmx_path>" hard
+& "<path_to_vmrun.exe>" -T ws reset "<vmx_path>" hard
 ```
 
 ### List Running VMs
 List all currently running virtual machines.
 
 ```powershell
-& "C:\Apps\vmware\vmrun.exe" -T ws list
+& "<path_to_vmrun.exe>" -T ws list
 ```
 
 **Example output:**
 ```
 Total running VMs: 1
-X:\VMs\new_ubt2204\Ubuntu 64-bit.vmx (running)
+<vmx_path> (running)
 ```
 
 ## Snapshot Commands
@@ -151,43 +152,43 @@ X:\VMs\new_ubt2204\Ubuntu 64-bit.vmx (running)
 Create a snapshot of the current VM state.
 
 ```powershell
-& "C:\Apps\vmware\vmrun.exe" -T ws snapshot "<vmx_path>" "<snapshot_name>"
+& "<path_to_vmrun.exe>" -T ws snapshot "<vmx_path>" "<snapshot_name>"
 ```
 
 **Example:**
 ```powershell
-& "C:\Apps\vmware\vmrun.exe" -T ws snapshot "X:\VMs\new_ubt2204\Ubuntu 64-bit.vmx" "snap1"
+& "<path_to_vmrun.exe>" -T ws snapshot "<vmx_path>" "snap1"
 ```
 
 ### List Snapshots
 List all snapshots for a VM.
 
 ```powershell
-& "C:\Apps\vmware\vmrun.exe" -T ws listSnapshots "<vmx_path>"
+& "<path_to_vmrun.exe>" -T ws listSnapshots "<vmx_path>"
 ```
 
 ### Revert to Snapshot
 Revert the VM to a specific snapshot state.
 
 ```powershell
-& "C:\Apps\vmware\vmrun.exe" -T ws revertToSnapshot "<vmx_path>" "<snapshot_name>"
+& "<path_to_vmrun.exe>" -T ws revertToSnapshot "<vmx_path>" "<snapshot_name>"
 ```
 
 **Example:**
 ```powershell
-& "C:\Apps\vmware\vmrun.exe" -T ws revertToSnapshot "X:\VMs\new_ubt2204\Ubuntu 64-bit.vmx" "snap1"
+& "<path_to_vmrun.exe>" -T ws revertToSnapshot "<vmx_path>" "snap1"
 ```
 
 ### Delete Snapshot
 Delete a specific snapshot.
 
 ```powershell
-& "C:\Apps\vmware\vmrun.exe" -T ws deleteSnapshot "<vmx_path>" "<snapshot_name>"
+& "<path_to_vmrun.exe>" -T ws deleteSnapshot "<vmx_path>" "<snapshot_name>"
 ```
 
 **Example:**
 ```powershell
-& "C:\Apps\vmware\vmrun.exe" -T ws deleteSnapshot "X:\VMs\new_ubt2204\Ubuntu 64-bit.vmx" "snap1"
+& "<path_to_vmrun.exe>" -T ws deleteSnapshot "<vmx_path>" "snap1"
 ```
 
 ## Guest Operations
@@ -202,48 +203,48 @@ All guest operations require guest credentials:
 Execute a program inside the guest VM.
 
 ```powershell
-& "C:\Apps\vmware\vmrun.exe" -T ws -gu <user> -gp <pass> runProgramInGuest "<vmx_path>" "<program_path>"
+& "<path_to_vmrun.exe>" -T ws -gu <user> -gp <pass> runProgramInGuest "<vmx_path>" "<program_path>"
 ```
 
 **Example (Windows guest):**
 ```powershell
-& "C:\Apps\vmware\vmrun.exe" -T ws -gu user -gp pass runProgramInGuest "X:\VMs\new_ubt2204\Ubuntu 64-bit.vmx" "C:\Windows\System32\notepad.exe"
+& "<path_to_vmrun.exe>" -T ws -gu user -gp pass runProgramInGuest "<vmx_path>" "C:\Windows\System32\notepad.exe"
 ```
 
 ### Run Script in Guest
 Execute a script or command inside the guest VM.
 
 ```powershell
-& "C:\Apps\vmware\vmrun.exe" -T ws -gu <user> -gp <pass> runScriptInGuest "<vmx_path>" "<interpreter>" "<script>"
+& "<path_to_vmrun.exe>" -T ws -gu <user> -gp <pass> runScriptInGuest "<vmx_path>" "<interpreter>" "<script>"
 ```
 
 **Example (Windows guest):**
 ```powershell
-& "C:\Apps\vmware\vmrun.exe" -T ws -gu user -gp pass runScriptInGuest "X:\VMs\new_ubt2204\Ubuntu 64-bit.vmx" "C:\Windows\System32\cmd.exe" "dir C:\"
+& "<path_to_vmrun.exe>" -T ws -gu user -gp pass runScriptInGuest "<vmx_path>" "C:\Windows\System32\cmd.exe" "dir C:\"
 ```
 
 **Example (Linux guest):**
 ```powershell
-& "C:\Apps\vmware\vmrun.exe" -T ws -gu user -gp pass runScriptInGuest "<vmx_path>" "/bin/bash" "ls -la /home"
+& "<path_to_vmrun.exe>" -T ws -gu user -gp pass runScriptInGuest "<vmx_path>" "/bin/bash" "ls -la /home"
 ```
 
 ### List Processes in Guest
 List all running processes in the guest VM.
 
 ```powershell
-& "C:\Apps\vmware\vmrun.exe" -T ws -gu <user> -gp <pass> listProcessesInGuest "<vmx_path>"
+& "<path_to_vmrun.exe>" -T ws -gu <user> -gp <pass> listProcessesInGuest "<vmx_path>"
 ```
 
 ### Kill Process in Guest
 Terminate a specific process in the guest VM.
 
 ```powershell
-& "C:\Apps\vmware\vmrun.exe" -T ws -gu <user> -gp <pass> killProcessInGuest "<vmx_path>" <pid>
+& "<path_to_vmrun.exe>" -T ws -gu <user> -gp <pass> killProcessInGuest "<vmx_path>" <pid>
 ```
 
 **Example:**
 ```powershell
-& "C:\Apps\vmware\vmrun.exe" -T ws -gu user -gp pass killProcessInGuest "X:\VMs\new_ubt2204\Ubuntu 64-bit.vmx" 1234
+& "<path_to_vmrun.exe>" -T ws -gu user -gp pass killProcessInGuest "<vmx_path>" 1234
 ```
 
 ## File Operations
@@ -252,24 +253,24 @@ Terminate a specific process in the guest VM.
 Copy a file from the host system to the guest VM.
 
 ```powershell
-& "C:\Apps\vmware\vmrun.exe" -T ws -gu <user> -gp <pass> copyFileFromHostToGuest "<vmx_path>" "<host_path>" "<guest_path>"
+& "<path_to_vmrun.exe>" -T ws -gu <user> -gp <pass> copyFileFromHostToGuest "<vmx_path>" "<host_path>" "<guest_path>"
 ```
 
 **Example:**
 ```powershell
-& "C:\Apps\vmware\vmrun.exe" -T ws -gu user -gp pass copyFileFromHostToGuest "X:\VMs\new_ubt2204\Ubuntu 64-bit.vmx" "C:\host\file.txt" "C:\guest\file.txt"
+& "<path_to_vmrun.exe>" -T ws -gu user -gp pass copyFileFromHostToGuest "<vmx_path>" "<host_path>" "<guest_path>"
 ```
 
 ### Copy File from Guest to Host
 Copy a file from the guest VM to the host system.
 
 ```powershell
-& "C:\Apps\vmware\vmrun.exe" -T ws -gu <user> -gp <pass> copyFileFromGuestToHost "<vmx_path>" "<guest_path>" "<host_path>"
+& "<path_to_vmrun.exe>" -T ws -gu <user> -gp <pass> copyFileFromGuestToHost "<vmx_path>" "<guest_path>" "<host_path>"
 ```
 
 **Example:**
 ```powershell
-& "C:\Apps\vmware\vmrun.exe" -T ws -gu user -gp pass copyFileFromGuestToHost "X:\VMs\new_ubt2204\Ubuntu 64-bit.vmx" "C:\guest\file.txt" "C:\host\file.txt"
+& "<path_to_vmrun.exe>" -T ws -gu user -gp pass copyFileFromGuestToHost "<vmx_path>" "<guest_path>" "<host_path>"
 ```
 
 ## VM Information Commands
@@ -279,15 +280,15 @@ Retrieve the IP address of the guest VM.
 
 ```powershell
 # Get IP immediately (may return empty if not available)
-& "C:\Apps\vmware\vmrun.exe" -T ws getGuestIPAddress "<vmx_path>"
+& "<path_to_vmrun.exe>" -T ws getGuestIPAddress "<vmx_path>"
 
 # Wait for IP address to become available
-& "C:\Apps\vmware\vmrun.exe" -T ws getGuestIPAddress "<vmx_path>" -wait
+& "<path_to_vmrun.exe>" -T ws getGuestIPAddress "<vmx_path>" -wait
 ```
 
 **Example:**
 ```powershell
-& "C:\Apps\vmware\vmrun.exe" -T ws getGuestIPAddress "X:\VMs\new_ubt2204\Ubuntu 64-bit.vmx" -wait
+& "<path_to_vmrun.exe>" -T ws getGuestIPAddress "<vmx_path>" -wait
 ```
 
 ### List Shared Folders
@@ -341,7 +342,7 @@ for ($i = 0; $i -lt $maxNum; $i++) {
 
 **Example:**
 ```powershell
-Get-Content "X:\VMs\new_ubt2204\Ubuntu 64-bit.vmx" | Select-String -Pattern "^sharedFolder" | ForEach-Object { $_.Line }
+Get-Content "<vmx_path>" | Select-String -Pattern "^sharedFolder" | ForEach-Object { $_.Line }
 ```
 
 ## Utility Commands
@@ -355,7 +356,7 @@ Get-ChildItem -LiteralPath "<vm_directory>" -Filter *.vmx | Select-Object -First
 
 **Example:**
 ```powershell
-Get-ChildItem -LiteralPath "X:\VMs\new_ubt2204" -Filter *.vmx | Select-Object -First 5 FullName
+Get-ChildItem -LiteralPath "<vm_directory>" -Filter *.vmx | Select-Object -First 5 FullName
 ```
 
 ## Common Patterns
@@ -364,22 +365,22 @@ Get-ChildItem -LiteralPath "X:\VMs\new_ubt2204" -Filter *.vmx | Select-Object -F
 
 ```powershell
 # 1. Find VMX file
-$vmx = Get-ChildItem -LiteralPath "X:\VMs\new_ubt2204" -Filter *.vmx | Select-Object -First 1 -ExpandProperty FullName
+$vmx = Get-ChildItem -LiteralPath "<vm_directory>" -Filter *.vmx | Select-Object -First 1 -ExpandProperty FullName
 
 # 2. Start VM headless
-& "C:\Apps\vmware\vmrun.exe" -T ws start $vmx nogui
+& "<path_to_vmrun.exe>" -T ws start $vmx nogui
 
 # 3. Wait for VM to boot and get IP
-$ip = & "C:\Apps\vmware\vmrun.exe" -T ws getGuestIPAddress $vmx -wait
+$ip = & "<path_to_vmrun.exe>" -T ws getGuestIPAddress $vmx -wait
 
 # 4. Copy file to guest
-& "C:\Apps\vmware\vmrun.exe" -T ws -gu user -gp pass copyFileFromHostToGuest $vmx "C:\host\script.sh" "/home/user/script.sh"
+& "<path_to_vmrun.exe>" -T ws -gu user -gp pass copyFileFromHostToGuest $vmx "<host_script_path>" "<guest_script_path>"
 
 # 5. Run script in guest
-& "C:\Apps\vmware\vmrun.exe" -T ws -gu user -gp pass runScriptInGuest $vmx "/bin/bash" "/home/user/script.sh"
+& "<path_to_vmrun.exe>" -T ws -gu user -gp pass runScriptInGuest $vmx "/bin/bash" "/home/user/script.sh"
 
 # 6. Stop VM
-& "C:\Apps\vmware\vmrun.exe" -T ws stop $vmx soft
+& "<path_to_vmrun.exe>" -T ws stop $vmx soft
 ```
 
 ## Troubleshooting
@@ -387,8 +388,9 @@ $ip = & "C:\Apps\vmware\vmrun.exe" -T ws getGuestIPAddress $vmx -wait
 ### vmrun.exe Not Found
 - Check VMware Workstation installation directory
 - Common locations:
-  - `C:\Program Files (x86)\VMware\VMware Workstation\vmrun.exe`
-  - `C:\Apps\vmware\vmrun.exe` (custom installation)
+  - `C:\Program Files\VMware\VMware Workstation\vmrun.exe` (64-bit default)
+  - `C:\Program Files (x86)\VMware\VMware Workstation\vmrun.exe` (32-bit default)
+  - Use search commands in Environment Setup section to find custom installations
 
 ### Guest Operations Fail
 - Verify VMware Tools is installed in the guest VM
@@ -412,12 +414,12 @@ Modern Ubuntu versions use `open-vm-tools` instead of traditional VMware Tools, 
 
 1. Copy the setup script to the guest VM:
 ```powershell
-& "C:\Apps\vmware\vmrun.exe" -T ws -gu <user> -gp <pass> copyFileFromHostToGuest "<vmx_path>" "C:\path\to\setup-shared-folders-auto-mount.sh" "/tmp/setup-shared-folders-auto-mount.sh"
+& "<path_to_vmrun.exe>" -T ws -gu <user> -gp <pass> copyFileFromHostToGuest "<vmx_path>" "C:\path\to\setup-shared-folders-auto-mount.sh" "/tmp/setup-shared-folders-auto-mount.sh"
 ```
 
 2. Make script executable and run it:
 ```powershell
-& "C:\Apps\vmware\vmrun.exe" -T ws -gu <user> -gp <pass> runScriptInGuest "<vmx_path>" "/bin/bash" "chmod +x /tmp/setup-shared-folders-auto-mount.sh && sudo /tmp/setup-shared-folders-auto-mount.sh"
+& "<path_to_vmrun.exe>" -T ws -gu <user> -gp <pass> runScriptInGuest "<vmx_path>" "/bin/bash" "chmod +x /tmp/setup-shared-folders-auto-mount.sh && sudo /tmp/setup-shared-folders-auto-mount.sh"
 ```
 
 **Method 2: Manual setup (Recommended approach - mount all shares)**

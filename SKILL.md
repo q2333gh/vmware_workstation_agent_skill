@@ -27,7 +27,7 @@ Activate this skill when users need to:
 - `vmrun.exe` must be accessible. Default installation locations:
   - `C:\Program Files (x86)\VMware\VMware Workstation\vmrun.exe` (32-bit systems)
   - `C:\Program Files\VMware\VMware Workstation\vmrun.exe` (64-bit systems)
-  - Custom installation paths (e.g., `C:\Apps\vmware\vmrun.exe`)
+  - Custom installation paths (check with search commands above)
 - **Note**: `vmrun.exe` is **not automatically added to PATH** by default. You can either:
   - Use the full path to `vmrun.exe` in commands (recommended for scripts)
   - Add VMware Workstation directory to system PATH environment variable
@@ -39,11 +39,16 @@ Activate this skill when users need to:
 All commands follow this pattern:
 ```powershell
 # Using full path (recommended)
-& "C:\Program Files\VMware\VMware Workstation\vmrun.exe" -T ws <command> "<vmx_path>" [options]
+& "<path_to_vmrun.exe>" -T ws <command> "<vmx_path>" [options]
 
 # Or if vmrun.exe is in PATH:
 vmrun -T ws <command> "<vmx_path>" [options]
 ```
+
+**Replace `<path_to_vmrun.exe>` with actual path**, such as:
+- `C:\Program Files\VMware\VMware Workstation\vmrun.exe` (64-bit default)
+- `C:\Program Files (x86)\VMware\VMware Workstation\vmrun.exe` (32-bit default)
+- Or use the search commands above to find your installation
 
 Where:
 - `-T ws` specifies VMware Workstation type
@@ -77,52 +82,52 @@ Get-ChildItem -Path "C:\Program Files*" -Filter vmrun.exe -Recurse -ErrorAction 
 
 **Start VM (headless):**
 ```powershell
-& "C:\Apps\vmware\vmrun.exe" -T ws start "<vmx_path>" nogui
+& "<path_to_vmrun.exe>" -T ws start "<vmx_path>" nogui
 ```
 
 **List running VMs:**
 ```powershell
-& "C:\Apps\vmware\vmrun.exe" -T ws list
+& "<path_to_vmrun.exe>" -T ws list
 ```
 
 **Stop VM (default: soft):**
 ```powershell
 # Default: Always use soft unless user explicitly requests hard
-& "C:\Apps\vmware\vmrun.exe" -T ws stop "<vmx_path>" soft
+& "<path_to_vmrun.exe>" -T ws stop "<vmx_path>" soft
 ```
 
 **Suspend VM (default: soft):**
 ```powershell
 # Default: Always use soft unless user explicitly requests hard
-& "C:\Apps\vmware\vmrun.exe" -T ws suspend "<vmx_path>" soft
+& "<path_to_vmrun.exe>" -T ws suspend "<vmx_path>" soft
 ```
 
 **Reset VM (default: soft):**
 ```powershell
 # Default: Always use soft unless user explicitly requests hard
-& "C:\Apps\vmware\vmrun.exe" -T ws reset "<vmx_path>" soft
+& "<path_to_vmrun.exe>" -T ws reset "<vmx_path>" soft
 ```
 
 ### Snapshots
 
 **Create snapshot:**
 ```powershell
-& "C:\Apps\vmware\vmrun.exe" -T ws snapshot "<vmx_path>" "<snapshot_name>"
+& "<path_to_vmrun.exe>" -T ws snapshot "<vmx_path>" "<snapshot_name>"
 ```
 
 **List snapshots:**
 ```powershell
-& "C:\Apps\vmware\vmrun.exe" -T ws listSnapshots "<vmx_path>"
+& "<path_to_vmrun.exe>" -T ws listSnapshots "<vmx_path>"
 ```
 
 **Revert to snapshot:**
 ```powershell
-& "C:\Apps\vmware\vmrun.exe" -T ws revertToSnapshot "<vmx_path>" "<snapshot_name>"
+& "<path_to_vmrun.exe>" -T ws revertToSnapshot "<vmx_path>" "<snapshot_name>"
 ```
 
 **Delete snapshot:**
 ```powershell
-& "C:\Apps\vmware\vmrun.exe" -T ws deleteSnapshot "<vmx_path>" "<snapshot_name>"
+& "<path_to_vmrun.exe>" -T ws deleteSnapshot "<vmx_path>" "<snapshot_name>"
 ```
 
 ### Guest Operations
@@ -131,41 +136,41 @@ Guest operations require credentials (`-gu` for username, `-gp` for password):
 
 **Run program in guest:**
 ```powershell
-& "C:\Apps\vmware\vmrun.exe" -T ws -gu <user> -gp <pass> runProgramInGuest "<vmx_path>" "<program_path>"
+& "<path_to_vmrun.exe>" -T ws -gu <user> -gp <pass> runProgramInGuest "<vmx_path>" "<program_path>"
 ```
 
 **Run script in guest:**
 ```powershell
-& "C:\Apps\vmware\vmrun.exe" -T ws -gu <user> -gp <pass> runScriptInGuest "<vmx_path>" "<interpreter>" "<script>"
+& "<path_to_vmrun.exe>" -T ws -gu <user> -gp <pass> runScriptInGuest "<vmx_path>" "<interpreter>" "<script>"
 ```
 
 **List processes in guest:**
 ```powershell
-& "C:\Apps\vmware\vmrun.exe" -T ws -gu <user> -gp <pass> listProcessesInGuest "<vmx_path>"
+& "<path_to_vmrun.exe>" -T ws -gu <user> -gp <pass> listProcessesInGuest "<vmx_path>"
 ```
 
 **Kill process in guest:**
 ```powershell
-& "C:\Apps\vmware\vmrun.exe" -T ws -gu <user> -gp <pass> killProcessInGuest "<vmx_path>" <pid>
+& "<path_to_vmrun.exe>" -T ws -gu <user> -gp <pass> killProcessInGuest "<vmx_path>" <pid>
 ```
 
 ### File Operations
 
 **Copy file from host to guest:**
 ```powershell
-& "C:\Apps\vmware\vmrun.exe" -T ws -gu <user> -gp <pass> copyFileFromHostToGuest "<vmx_path>" "<host_path>" "<guest_path>"
+& "<path_to_vmrun.exe>" -T ws -gu <user> -gp <pass> copyFileFromHostToGuest "<vmx_path>" "<host_path>" "<guest_path>"
 ```
 
 **Copy file from guest to host:**
 ```powershell
-& "C:\Apps\vmware\vmrun.exe" -T ws -gu <user> -gp <pass> copyFileFromGuestToHost "<vmx_path>" "<guest_path>" "<host_path>"
+& "<path_to_vmrun.exe>" -T ws -gu <user> -gp <pass> copyFileFromGuestToHost "<vmx_path>" "<guest_path>" "<host_path>"
 ```
 
 ### VM Information
 
 **Get guest IP address:**
 ```powershell
-& "C:\Apps\vmware\vmrun.exe" -T ws getGuestIPAddress "<vmx_path>" [-wait]
+& "<path_to_vmrun.exe>" -T ws getGuestIPAddress "<vmx_path>" [-wait]
 ```
 
 The `-wait` flag waits for the guest to obtain an IP address if it's not yet available.
